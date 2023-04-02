@@ -3,85 +3,164 @@
     <v-card class="p-5">
       <!--  -->
       <div class="head flex justify-between items-center mb-7">
-        <h2 class="text-3xl text-gray-600 font-bold">Invoises</h2>
-        <v-btn class="bg-green-600 text-white">
+        <h2 class="text-3xl text-gray-600 font-bold">Users</h2>
+
+        <v-btn class="bg-green-600 text-white" @click="createUser = true">
           <i class="fas fa-plus"></i>
           <span class="ml-2">Create New</span>
         </v-btn>
       </div>
 
-      <TheTable :headers="headers" :items="items">
+      <TheTable :headers="headers" :items="GET_USERS_LIST">
         <!--  -->
-        <template #item-id="data">
-          <p class="font-semibold text-center">{{ data.id }}</p>
-        </template>
-        <!--  -->
-        <template #item-name="data">
-          <div class="text-center font-bold text-sm text-gray-700">
-            <p>{{ data.name }}</p>
+        <template #item-username="user">
+          <div class="text-center font-semibold">
+            {{ user.username }}
           </div>
         </template>
+
         <!--  -->
-        <template #item-date="data">
-          <div class="text-center font-semibold text-gray-500">
-            <p>{{ data.date }}</p>
+        <template #item-phone_number="user">
+          <div class="text-center">
+            <a :href="'tel:' + user.phone_number" class="text-brand"
+              >{{ user.phone_number }}
+            </a>
           </div>
         </template>
+
         <!--  -->
-        <template #item-price="data">
-          <div class="text-center font-semibold text-gray-800">
-            <p>${{ data.price }}</p>
+        <template #item-email="user">
+          <div class="text-center">
+            <a :href="'mailto: ' + user.email" class="text-brand"
+              >{{ user.email }}
+            </a>
           </div>
         </template>
+
         <!--  -->
-        <template #item-status="data">
-          <div class="flex justify-center">
-            <p
-              class="text-center font-bold text-sm"
-              :class="{
-                'text-red-500 ': data.status === 'approved',
-                'text-green-500 ': data.status === 'paid',
-                'text-yellow-500 ': data.status === 'pending',
-              }"
+        <template #item-created_at="user">
+          <div class="text-center">
+            {{ new Date(user.created_at).toLocaleString() }}
+          </div>
+        </template>
+
+        <!--  -->
+        <template #item-action="user">
+          <div class="flex justify-center items-center my-2">
+            <v-btn class="bg-blue-600 text-white mr-2" @click="editUser = user">
+              <i class="fas fa-edit"></i>
+            </v-btn>
+
+            <v-btn
+              class="bg-red-600 text-white"
+              @click="deleteUserDialog = user._id"
             >
-              {{ data.status }}
-            </p>
-          </div>
-        </template>
-        <!--  -->
-        <template #item-action>
-          <div class="my-2 flex justify-center">
-            <v-btn class="bg-brand text-white">View more</v-btn>
+              <i class="fas fa-trash"></i>
+            </v-btn>
           </div>
         </template>
       </TheTable>
     </v-card>
+
+    <Popup :open="createUser" @close="createUser = false">
+      <CreateUser @close="createUser = false" @userCreated="fetchAllUsers" />
+    </Popup>
+
+    <Popup :open="editUser" @close="editUser = null">
+      <EditUser
+        :userInfo="editUser"
+        @close="editUser = null"
+        @userEdited="fetchAllUsers"
+      />
+    </Popup>
+
+    <Dialog v-model="deleteUserDialog">
+      <div class="p-5">
+        <h2 class="text-xl font-semibold text-center mb-3">Are you sure?</h2>
+
+        <div class="">
+          <v-btn
+            class="bg-red-500 text-white mr-3"
+            @click="deleteUserDialog = null"
+            >Cancel</v-btn
+          >
+          <v-btn
+            class="bg-blue-500 text-white"
+            @click="deleteUser(deleteUserDialog)"
+            >Delete</v-btn
+          >
+        </div>
+      </div>
+    </Dialog>
   </v-container>
 </template>
 
 <script>
 import TheTable from "@/components/TheTable.vue";
-import usersArray from "./usersArray";
+import { mapActions, mapGetters } from "vuex";
+import Popup from "@/components/Popup.vue";
+import CreateUser from "../components/CreateUser.vue";
+import EditUser from "../components/EditUser.vue";
+import { useToast } from "vue-toastification";
+import Dialog from "@/components/Dialog.vue";
 
 export default {
-  components: { TheTable },
+  components: { TheTable, Popup, CreateUser, EditUser, Dialog },
   data() {
     return {
+      toast: useToast(),
+      deleteUserDialog: null,
+      createUser: false,
+      editUser: null,
       headers: [
-        { text: "ID", value: "id", width: 150 },
         {
-          text: "Name",
-          value: "name",
+          text: "Username",
+          value: "username",
           sortable: true,
-          width: 500,
         },
-        { text: "Date", value: "date", sortable: true },
-        { text: "Price", value: "price", sortable: true, width: 150 },
-        { text: "Status", value: "status", sortable: true, width: 200 },
-        { text: "Action", value: "action", width: 200 },
+        {
+          text: "Phone number",
+          value: "phone_number",
+        },
+        {
+          text: "Email",
+          value: "email",
+        },
+        {
+          text: "Created at",
+          value: "created_at",
+          sortable: true,
+        },
+        {
+          text: "Action",
+          value: "action",
+        },
       ],
-      items: usersArray,
     };
+  },
+  computed: {
+    ...mapGetters("users", ["GET_USERS_LIST"]),
+  },
+  methods: {
+    ...mapActions("users", ["FETCH_ALL_USERS", "DELETE_USER"]),
+    async fetchAllUsers() {
+      await this.FETCH_ALL_USERS();
+    },
+    async deleteUser(id) {
+      if (id) {
+        try {
+          await this.DELETE_USER(id);
+          this.toast.success("User has been deleted!");
+          this.deleteUserDialog = null;
+          await this.fetchAllUsers();
+        } catch (err) {
+          this.toast.danger("Somthing went wrong!");
+        }
+      }
+    },
+  },
+  mounted() {
+    this.fetchAllUsers();
   },
 };
 </script>
