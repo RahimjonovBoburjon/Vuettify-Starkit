@@ -5,7 +5,7 @@ Create by boburjonrahimjonov
 ## Download My Project
 
 ```https
-git https://github.com/RahimjonovBoburjon/Vuettify-Starkit/archive/refs/heads/main.zip
+https://github.com/RahimjonovBoburjon/Vuettify-Starkit/archive/refs/heads/main.zip
 ```
 
 ## Description
