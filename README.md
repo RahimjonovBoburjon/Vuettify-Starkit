@@ -1,17 +1,37 @@
 # Vutify Project
 
-Create by boburjonrahimjonov
+Foobar is a JS library for dealing with word pluralization.
 
-## Download My Project
+## Installation
 
-```https
-https://github.com/RahimjonovBoburjon/Vuettify-Starkit/archive/refs/heads/main.zip
+Use the package manager NPM to install foobar.
+
+```bash
+pip install foobar
 ```
 
-## Description
+## Usage
 
-Hello my friends! I made this site for the first time in practice. Write to my gmail if you have any questions.
+```python
+import foobar
 
-My Gmail: shadow88bob@gmail.com
+# returns 'words'
+foobar.pluralize('word')
 
-My Discord: CSGO_BOSS#0255
+# returns 'geese'
+foobar.pluralize('goose')
+
+# returns 'phenomenon'
+foobar.singularize('phenomena')
+```
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first
+to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
