@@ -15,3 +15,5 @@ Hello my friends! I made this site for the first time in practice. Write to my g
 My Gmail: shadow88bob@gmail.com
 
 My Discord: CSGO_BOSS#0255
+
+My Telegram: @PROGRAMMER2008
